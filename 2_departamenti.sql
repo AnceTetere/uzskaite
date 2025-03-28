@@ -150,3 +150,24 @@ EXEC sp_rename 'Darbinieki_2NF.new_DepID', 'DepID', 'COLUMN';
 -- Sekundārā atslēga
 ALTER TABLE Departamenti_2NF 
 ADD CONSTRAINT FK_DepID FOREIGN KEY (DepID) REFERENCES Departamenti_2NF(DepID);
+
+---------------------------------------------
+- Pilnais savienojums
+-- 1 izveido un apskata
+SELECT *
+FROM CSP_Darbinieki AS A
+FULL JOIN CSP_Algas AS B
+ON A.Darbinieka_ID = B.DarbiniekaID;
+
+--2 sakopj
+SELECT A.Darbinieka_ID, A.D_vārds, A.D_uzvārds, A.D_pozīcija, A.TelefonaNr, B.Samaksa_EUR, B.Samaksas_veids, A.DepID
+FROM CSP_Darbinieki AS A
+FULL JOIN CSP_Algas AS B
+ON A.Darbinieka_ID = B.DarbiniekaID;
+
+--3 Formējamies uz 2-ro normālformu
+SELECT A.Darbinieka_ID, A.D_vārds, A.D_uzvārds, A.D_pozīcija, A.TelefonaNr, B.Samaksa_EUR, B.Samaksas_veids, A.DepID
+INTO Darbinieki
+FROM CSP_Darbinieki AS A
+FULL JOIN CSP_Algas AS B
+ON A.Darbinieka_ID = B.DarbiniekaID;
