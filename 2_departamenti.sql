@@ -126,4 +126,4 @@ UNIQUE(Dep_Daļa_csp);
 --------------------------------------------------------------------------
 -- Sekundārā atslēga
 ALTER TABLE Departamenti_2NF 
-ALTER COLUMN Dep_Daļa_csp nvarchar(200) Not Null;
+ADD CONSTRAINT FK_DepID FOREIGN KEY (DepID) REFERENCES Departamenti_2NF(DepID);
