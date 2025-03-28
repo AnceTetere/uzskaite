@@ -124,4 +124,6 @@ UNIQUE(Dep_Daļa_csp);
 
 
 --------------------------------------------------------------------------
-
+-- Sekundārā atslēga
+ALTER TABLE Departamenti_2NF 
+ALTER COLUMN Dep_Daļa_csp nvarchar(200) Not Null;
