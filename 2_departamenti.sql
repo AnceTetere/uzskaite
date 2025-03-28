@@ -124,6 +124,29 @@ UNIQUE(Dep_Daļa_csp);
 
 
 --------------------------------------------------------------------------
+-- apskata
+SELECT *
+FROM [dbo].[Darbinieki_2NF];
+
+-- Ievieto atvasinātos datus ailē new_depId
+UPDATE Departamenti_2NF
+SET new_DepID =
+   CASE
+      WHEN LEN(DepID) = 1 THEN CONCAT(DepID, '-0')
+	  WHEN LEN(DepID) > 1 THEN DepID
+	END;
+
+-- apskata
+SELECT *
+FROM [dbo].[Darbinieki_2NF];
+
+-- izdzēš veco dep_id
+ALTER TABLE [dbo].[Darbinieki_2NF] DROP COLUMN DepID;
+
+-- pārsauc aili
+EXEC sp_rename 'Darbinieki_2NF.new_DepID', 'DepID', 'COLUMN';
+
+
 -- Sekundārā atslēga
 ALTER TABLE Departamenti_2NF 
 ADD CONSTRAINT FK_DepID FOREIGN KEY (DepID) REFERENCES Departamenti_2NF(DepID);
