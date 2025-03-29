@@ -1,3 +1,6 @@
+USE AdventureWorks2022
+GO
+
 SELECT * FROM Person.Person;
 
 SELECT DISTINCT PersonType
@@ -85,13 +88,31 @@ SELECT *
 FROM Person.Person
 WHERE FirstName LIKE 'ang%';
 
+SELECT *
+FROM Person.Person
+WHERE FirstName like '%inda';
 
+SELECT *
+FROM Person.Person
+WHERE FirstName like '%inda%';
 
+SELECT * FROM Person.Person
+WHERE FirstName LIKE '_inda';
 
+SELECT * FROM Person.Person
+WHERE FirstName LIKE '__inda';
 
+SELECT * FROM Person.Person
+WHERE FirstName LIKE '[abc]%';
 
+SELECT * FROM Person.Person
+WHERE FirstName LIKE '[a-c]%';
 
+SELECT * FROM Person.Person
+WHERE FirstName NOT LIKE '[a-c]%';
 
+SELECT * FROM Person.Person
+WHERE FirstName NOT LIKE '%a%';
 
 
 
