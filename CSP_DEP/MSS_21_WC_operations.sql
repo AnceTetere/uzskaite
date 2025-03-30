@@ -1,122 +1,58 @@
 USE AdventureWorks2022
 GO
 
+--Use Person.Person table
 SELECT * FROM Person.Person;
 
-SELECT DISTINCT PersonType
-FROM Person.Person;
-
-SELECT DISTINCT PersonType, FirstName
-FROM Person.Person;
-
-SELECT TOP (20) *
-FROM Person.Person;
-
-SELECT FirstName, MiddleName, LastName
-FROM Person.Person;
-
-SELECT FirstName, MiddleName, LastName
-FROM Person.Person
-ORDER BY FirstName; --Orders in ascending order by default
-
---Ascending sorting
-SELECT FirstName, MiddleName, LastName
-FROM Person.Person
-ORDER BY FirstName ASC; --Ascending order by the FirstName as before.
-
---Descending sorting
-SELECT FirstName, MiddleName, LastName
-FROM Person.Person
-ORDER BY FirstName DESC; --Orders in descending order using DESC.
-
-
-SELECT * FROM Production.ProductInventory;
-
-SELECT SUM(Quantity)
-FROM Production.ProductInventory;
-
-SELECT Shelf, SUM(Quantity)
-FROM Production.ProductInventory; --Returns error
-
-SELECT Shelf, SUM(Quantity)
-FROM Production.ProductInventory
-GROUP BY Shelf
-ORDER BY Shelf;
-
-SELECT Shelf, 
-      SUM(Quantity) AS Quantity,
-	  SUM(Bin) AS Bin
-FROM Production.ProductInventory
-GROUP BY Shelf
-ORDER BY Shelf;
-
-SELECT Shelf,
-	   SUM(Quantity) AS Quantity,
-	   SUM(Bin) AS Bin
-FROM Production.ProductInventory
-GROUP BY Shelf
-HAVING Shelf = 'A'
-ORDER BY Shelf;
-
-SELECT Shelf,
-       SUM(Quantity) AS Quantity,
-	   SUM(Bin) AS Bin
-FROM Production.ProductInventory
-WHERE Shelf = 'A'
-GROUP BY Shelf;
-
-SELECT Shelf,
-       SUM(Quantity) AS Quantity,
-	   SUM(Bin) AS Bin
-FROM Production.ProductInventory
-GROUP BY Shelf
-HAVING SUM(Quantity) > 10000
-ORDER BY Shelf;
-
-SELECT Shelf,
-       SUM(Quantity) AS Quantity,
-	   SUM(Bin) AS Bin
-FROM Production.ProductInventory
-WHERE Shelf = 'A'
-GROUP BY Shelf;
-
+--Select all the entries where the first name begins with an 'a'.
 SELECT *
 FROM Person.Person
 WHERE FirstName LIKE 'a%';
 
-SELECT *
+--Select all the entries where the first name begins with an 'ang'.
+SELECT * 
 FROM Person.Person
 WHERE FirstName LIKE 'ang%';
 
+--Select all the entries where the first name ends with an 'a'.
+SELECT * FROM Person.Person
+WHERE FirstName LIKE '%a';
+
+--Select all the entries where the first name ends with 'inda'.
+SELECT * FROM Person.Person
+WHERE FirstName LIKE '%inda';
+
+--Finds the values that have 'inda' in any position.
 SELECT *
 FROM Person.Person
-WHERE FirstName like '%inda';
+WHERE FirstName LIKE '%inda%';
 
-SELECT *
-FROM Person.Person
-WHERE FirstName like '%inda%';
-
+--Finds five letter names ending with 'inda'.
 SELECT * FROM Person.Person
 WHERE FirstName LIKE '_inda';
 
-SELECT * FROM Person.Person
-WHERE FirstName LIKE '__inda';
+--Finds six letter names ending with '__inda'.
+SELECT *
+FROM Person.Person
+WHERE FirstName LIKE '__inda'
 
+--Finds five letter names starting with 'D' and the third letter 'v'.
+SELECT *
+FROM Person.Person
+WHERE FirstName LIKE 'D_v__';
+
+--Finds first names starting with letter 'a', 'b', or 'c'.
 SELECT * FROM Person.Person
 WHERE FirstName LIKE '[abc]%';
 
+--Finds first names starting with letters 'a' through 'c'
 SELECT * FROM Person.Person
 WHERE FirstName LIKE '[a-c]%';
 
+--Not Like
 SELECT * FROM Person.Person
 WHERE FirstName NOT LIKE '[a-c]%';
 
+--Without a letter 'a' in any position of the first name
 SELECT * FROM Person.Person
 WHERE FirstName NOT LIKE '%a%';
-
-
-
-
-
-
-
