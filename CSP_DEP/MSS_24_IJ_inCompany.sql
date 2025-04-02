@@ -1,3 +1,20 @@
+USE AdventureWorks2022
+GO
+
+SELECT * FROM Person.Person;
+SELECT * FROM Person.EmailAddress;
+
+SELECT * 
+FROM Person.Person
+INNER JOIN Person.EmailAddress
+ON Person.BusinessEntityID = EmailAddress.BusinessEntityID;
+
+SELECT FirstName, LastName, EmailAddress
+FROM Person.Person
+JOIN Person.EmailAddress
+ON Person.BusinessEntityID = EmailAddress.BusinessEntityID;
+
+----------
 USE Company
 GO
 
