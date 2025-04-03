@@ -1,3 +1,60 @@
+-- Atvērt savu datubāzi
+USE [usd_at]
+GO
+
+--Apskata ielasītos datus
+SELECT * --VISAS AILES
+FROM [dbo].[RAW uzskaite]
+
+-- Noņemt pēdiņas, ja tādas ir
+UPDATE [dbo].[RAW uzskaite] SET [ID_num] = REPLACE(nmrkod, '"', '');
+
+-- Izmaina atribūta nosaukumu
+EXEC sp_rename [dbo].[RAW uzskaite].[ID_num], 'ID_num', 'COLUMN'
+
+
+-- Izvēlas pirmo atribūtu un pārbauda tā platumu un datu tipu
+SELECT [ID_num], LEN([ID_num]) AS garums 
+FROM [dbo].[RAW uzskaite]
+ORDER BY garums DESC; 
+
+--Pirmā atribūta max garums = 7 zīmes
+-- Nomaina atribūta izmēru uz 7
+   ALTER TABLE [dbo].[RAW uzskaite] ALTER COLUMN [ID_num] VARCHAR(7);
+
+-- Izvēlas otru atribūtu un pārbauda tā platumu
+SELECT [Iestade], LEN([Iestade]) AS garums 
+FROM [dbo].[RAW uzskaite]
+ORDER BY garums DESC
+
+--Otrā atribūta max garums = 13 zīmes
+-- Nomaina atribūta izmēru uz 13
+   ALTER TABLE [dbo].[RAW uzskaite] ALTER COLUMN [Iestade] VARCHAR(13);
+
+-- Izvēlas trešo atribūtu un pārbauda tā platumu
+SELECT [Pakalpojums], LEN([Pakalpojums]) AS garums 
+FROM [dbo].[RAW uzskaite]
+ORDER BY garums DESC
+
+--Trešā atribūta max garums = 24 zīmes
+-- Nomaina atribūta izmēru uz 24
+   ALTER TABLE [dbo].[RAW uzskaite] ALTER COLUMN [Iestade] VARCHAR(24);
+
+-- Izveido tukšu tabulu
+CREATE TABLE uzskaite (
+  ID_num varchar(7),
+  Iestade varchar (50), --varchar - teksta vērtība
+  Pakalpojums varchar (100)
+);
+
+-- Pārņem noformētos datus uz jauno tabulu
+INSERT INTO [dbo].[uzskaite]
+SELECT [ID_num],[Iestade], [Pakalpojums]
+FROM [dbo].[RAW uzskaite]
+
+SELECT *
+FROM [dbo].[uzskaite]
+
 -- SEKOJOŠAIS IR ATRIBŪTU DEFINĒŠANA UN PĀRBAUDES, KAM VAR IZSEKOT LĪDZ.
 SELECT *
 FROM [dbo].[R uzskaite_LV]; -- 36 668 rindas
