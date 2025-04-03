@@ -1,3 +1,26 @@
+USE Company
+GO
+
+SELECT * FROM tableEmployees;
+SELECT * FROM tableDepartments;
+SELECT * FROM tableEmployees, tableDepartments;
+
+SELECT EmployeeID, EmployeeName, DepartmentName
+FROM tableEmployees, tableDepartments;
+
+SELECT EmployeeID, EmployeeName, DepartmentName
+FROM tableEmployees
+JOIN tableDepartments
+ON tableEmployees.DepID = tableDepartments.DepID;
+
+SELECT EmployeeID, EmployeeName, DepartmentName
+FROM tableEmployees AS A
+JOIN tableDepartments AS B
+ON A.DepID = B.DepID;
+
+
+
+----------------************--------------------
 USE AdventureWorks2022
 GO
 
