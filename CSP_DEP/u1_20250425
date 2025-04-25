@@ -6,6 +6,39 @@ SELECT * FROM [RAW uzskaite]
 --ŠODIEN MĒS SĀKAM AR DATUMIEM
 --Te mums ir divi datumu atribūti: Datums_sanemts un Datums_nosutits
 
+/* Atribūts Pakalpojums nes tekstu, kura maksimālais platums ir 24 zīmes.
+   Tukšajā tabulā ar nosaukumu uzskaite tas tiek nodefinēts kā nvarchar teksta tips, kas atļauj latviešu burtus 24 zīmēs.*/
+
+--7 Apskata ceturto atribūtu Datums_sanemts
+    SELECT Datums_sanemts
+    FROM [RAW uzskaite];
+
+-- Novērtē ailes platumu, datu tipu un vai standarts atbilst ISO 8601
+   SELECT Datums_sanemts, LEN(Datums_sanemts) PLATUMS  -- AS var izlaist
+   FROM [RAW uzskaite]
+   ORDER BY PLATUMS DESC;
+
+   SELECT Datums_sanemts
+   FROM   [RAW uzskaite]
+   WHERE   Datums_sanemts NOT LIKE '____-__-__';  --meklē rindas, kas neatbilst šim formātam.
+
+/* Eiropas norma ISO standartam (EN ISO 8601) kopš 2021. gada tiek norādīta tiesisko dokumentu izstrādes vadlīnijās 
+   (European Legislation Identifier, 2021).
+   
+   Ar klauzulu ALTER TABLE šie dati tiek pārdefinēti datuma formātā,
+   un lidzīgi tabulā uzskaite tiek definēts atribūts Datums_sanemts datuma formātā.*/
+   ALTER TABLE [RAW uzskaite]
+   ALTER COLUMN Datums_sanemts DATE;
+
+-- TUKŠĀ TABULA, KO DEFINĒJAM UN AR KURU TURPINĀSIM.
+CREATE TABLE uzskaite (
+	ID_num varchar(7),
+	Iestade nvarchar(13),
+	Pakalpojums nvarchar(24),
+	Datums_sanemts date,
+) 
+
+
 -- Sākam ar pārbaudi, vai atribūts vispār nes datumu = 1: TRUE 0: NĒ
 --pārbauda vai Datums_sanemts vispār atbilst datumam
 SELECT ISDATE(Datums_sanemts)
@@ -39,3 +72,85 @@ from [RAW uzskaite];
 --Nodefinē aili te un tabulā, ko būvējam
    ALTER TABLE [RAW uzskaite]
    ALTER COLUMN Datums_sanemts DATE;
+
+--14 Pārbauda, cik rakstuzīmes atribūts aizņem.
+SELECT [Iesniegsanas_veids], LEN(Iesniegsanas_veids) AS platums 
+FROM [dbo].[R uzskaite_LV]
+ORDER BY platums DESC; --Redzu latviešu tekstu 13 zīmēs, tāpēc attiecīgi definēšu NVARCHAR(13)
+
+--15 Pārtaisa aili
+ALTER TABLE [dbo].[R uzskaite_LV] ALTER COLUMN [Iesniegsanas_veids] NVARCHAR(13); 
+
+--Atribūts 6: Datums_nosutits
+--16 Apskata aili Datums_nosutits
+SELECT Datums_nosutits
+FROM [dbo].[R uzskaite_LV];
+
+--17 Atkal pārbauda, vai formāts atbilst
+SELECT Datums_nosutits 
+FROM [dbo].[R uzskaite_LV]
+WHERE Datums_sanemts NOT LIKE '____-__-__';  --Neatgriež nevienu rindu. Tātad viss atbilst.
+
+--18 Pārtaisa aili datuma formātā
+ALTER TABLE [R uzskaite_LV] ALTER COLUMN Datums_nosutits DATE;
+
+--Atribūts 7: Atbilde
+--20 Apskata aili Atbilde
+SELECT Atbilde
+FROM [dbo].[R uzskaite_LV];
+
+--21 Pārbauda, cik rakstuzīmes atribūts aizņem.
+SELECT [Atbilde], LEN(Atbilde) AS platums 
+FROM [dbo].[R uzskaite_LV]
+ORDER BY platums DESC; --Redzu latviešu tekstu, kur garākais gals ir 49 zīmēs - definēšu kā NVARCHAR(50)
+
+--22 Pārtaisa aili
+ALTER TABLE [dbo].[R uzskaite_LV] ALTER COLUMN [Atbilde] NVARCHAR(50);
+
+--Atribūts 8: atbildets_laika
+--23 Apskata aili atbildets_laika
+SELECT atbildets_laika
+FROM [dbo].[R uzskaite_LV];
+
+--24 Redzu, ka šīs ir Būla vienības, tāpēc mani intresē, vai tur nav kas cits, kā vien Jā un Nē šajā ailē
+SELECT atbildets_laika                      -- Izvēlos no tabulas aili [atbildets_laika] 
+FROM [dbo].[R uzskaite_LV]
+WHERE atbildets_laika != 'Jā' AND atbildets_laika != 'Nē';  --Tādu rindu nav
+
+--Lai pārtaisītu aili Būla formāta, būtu jāmaina Jā uz TRUE un Nē uz FALSE - pagaidām lai paliek.
+--26 Saglabāju NVARCHAR 2-ās zīmēs
+ALTER TABLE [dbo].[R uzskaite_LV] ALTER COLUMN atbildets_laika NVARCHAR(2);
+
+--Atribūts 9: apstridets
+--27 Apskata aili apstridets
+SELECT apstridets
+FROM [dbo].[R uzskaite_LV];
+
+--28 Pārbaudu platumu
+-- no lielākās uz mazāko
+SELECT apstridets, LEN(apstridets) AS garums
+FROM [dbo].[R uzskaite_LV]
+ORDER BY garums DESC; 
+
+--no mazākās uz lielāko
+SELECT apstridets, LEN(apstridets) AS garums
+FROM [dbo].[R uzskaite_LV]
+ORDER BY garums ASC; 
+
+-- Izrādās, ka aile nes tukšumus.
+--Tos pārdefinē par NULL.
+UPDATE [R uzskaite_LV]
+SET [apstridets] = NULL
+WHERE apstridets = '';
+
+--Un apskata
+SELECT apstridets
+FROM [dbo].[R uzskaite_LV]
+ORDER BY apstridets ASC; 
+
+--29 Te pārtaisu par Būla vērtībām
+ALTER TABLE [dbo].[R uzskaite_LV] ALTER COLUMN apstridets BIT;
+
+SELECT *
+FROM [dbo].[R uzskaite_LV]
+WHERE ID_num = '1131730'
