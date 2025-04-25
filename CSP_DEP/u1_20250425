@@ -1,0 +1,41 @@
+use usd_at
+go
+
+SELECT * FROM [RAW uzskaite]
+
+--ŠODIEN MĒS SĀKAM AR DATUMIEM
+--Te mums ir divi datumu atribūti: Datums_sanemts un Datums_nosutits
+
+-- Sākam ar pārbaudi, vai atribūts vispār nes datumu = 1: TRUE 0: NĒ
+--pārbauda vai Datums_sanemts vispār atbilst datumam
+SELECT ISDATE(Datums_sanemts)
+FROM [RAW uzskaite];
+
+--vai visi viņi atbilst datumam
+SELECT COUNT(ISDATE(Datums_sanemts))
+from [RAW uzskaite]
+WHERE ISDATE(Datums_sanemts) = 1;
+
+-- vai šīs ir visas rindas tabulā Raw uzskaite
+SELECT COUNT(ISDATE(Datums_sanemts)) AS [Datuma rindas] 
+from [RAW uzskaite]
+where ISDATE(Datums_sanemts) = 1;
+
+SELECT COUNT(ID_num) AS [Tabulas rindas] 
+from [RAW uzskaite];
+
+--Ja visi ir datumi, tos vienmēr var konvertēt uz standartu
+SELECT CONVERT(nvarchar, Datums_sanemts, 126) AS ISO8601Date
+from [RAW uzskaite]
+
+--varam pārbaudīt ka konvertētais numurs sakrīt ar saņemto teksta formātā
+SELECT COUNT(CONVERT(nvarchar, Datums_sanemts, 126)) AS ISO8601Date
+from [RAW uzskaite]
+WHERE CONVERT(nvarchar, Datums_sanemts, 126) = Datums_sanemts;
+
+SELECT COUNT(Datums_sanemts) AS [Oriģinālais datums]
+from [RAW uzskaite];
+
+--Nodefinē aili te un tabulā, ko būvējam
+   ALTER TABLE [RAW uzskaite]
+   ALTER COLUMN Datums_sanemts DATE;
