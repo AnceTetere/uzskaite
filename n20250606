@@ -1,0 +1,351 @@
+USE usd_at
+GO
+
+--1 Apskata tabulu uzskaite
+SELECT * 
+FROM uzskaite
+
+--2 Sūdzības ir par noteiktām summām - attiecīgi importēsim informāciju par summām, par kurām iet runa.
+--G:\USD\!ApmainasFaili\simulatedData\treniņdatne_Uzskaite\Dati
+SELECT * --COUNT(*)
+FROM [dbo].[RAW_summas]; -- 33 074 rindas
+
+-- Atribūts 1: ID_num
+--1 Apskata aili ID_num
+SELECT ID_num
+FROM RAW_summas;
+
+--2 Pārbauda, vai ailē rakstu zīmju nav vairāk par 7
+SELECT ID_num, LEN(ID_num) AS platums 
+FROM RAW_summas
+WHERE LEN(ID_num) > 7; --atgriež tukšu tabulu
+
+-- KĀ VĒL ŠO VARĒTU PĀRBAUDĪT?
+SELECT COUNT(ID_num) AS [Ieraksti ID_num, kuru garums pārsniedz 7 rakstu zīmes.]
+FROM RAW_summas
+WHERE LEN(ID_num) > 7;
+
+--3 Pārtaisa un definē aili
+ALTER TABLE RAW_summas 
+ALTER COLUMN ID_num VARCHAR(7) NOT NULL; -- ID vērtība nedrīkst būt tukša
+
+------------------- Atšķirība starp VARCHAR un CHAR datu tipiem
+----Te platums variē - VARCHAR
+----Te ir jāzin, par SSMS aklo apstrādi, ka izmantojot CHAR(7), tālākās procedūrās SQL tos ierakstus, kas nāk
+-- 6 zīmēs pievienos tukšumu galā, lai būtu 7 zīmēs, kamēr VARCHAR ļaus tiem variēt. 1. COERCION
+SELECT ID_num, LEN(ID_num) AS platums 
+FROM RAW_summas
+ORDER BY platums DESC
+
+           /*Atkāpīte par datu tipiem - un to funkcijām.
+           Funkcijas darbojas ar vagona saturu: ja šķidrumu no cisternas var izpumpēt ar pumpi (pumpis būtu funkcija),
+		   tad lai malku pārkrautu, pumpis nederēs. Attiecīgi ar funkcijām: Ja aile nesa teksta datu tipu, tad
+		   izmanto funkcijas teksta apstrādei.*/
+
+		   --String Function
+           --LEN() function
+           SELECT LEN('MĀCĪBAS CSP 2025')
+		   SELECT LEN('MĀCĪBAS CSP 2025') AS [Ieraksta garums]
+		   
+		   --LEFT() function
+           SELECT LEFT('MĀCĪBAS CSP 2025', 3)
+		   SELECT LEFT('MĀCĪBAS CSP 2025', 3) AS [Pirmie trīs burti]
+
+           SELECT LEFT('MĀCĪBAS CSP 2025', 11)
+		   SELECT LEFT('MĀCĪBAS CSP 2025', 11) AS [Pirmās 11 rakstu zīmes]
+
+           --TRIM() function
+           SELECT TRIM('MĀCĪBAS CSP                      ')
+		   SELECT '          MĀCĪBAS CSP                      ' AS [Ieraksts ar tukšumiem]
+		   SELECT TRIM('          MĀCĪBAS CSP                      ') AS [Notīrīti sekojošie tukšumi]
+
+           --LOWER() function
+           SELECT LOWER('MĀCĪBAS CSP 2025')
+		   SELECT LOWER('MĀCĪBAS CSP 2025') AS [Ieraksts pārveidots uz mazajiem burtiem]
+
+           --UPPER() function
+           SELECT UPPER('mācības csp 2025')
+		   SELECT UPPER('mācības csp 2025') AS [Ieraksts pārveidots uz lielajiem burtiem]
+		   ----
+		   SELECT * FROM uzskaite   
+		   SELECT Iestade, Atbilde FROM uzskaite
+		   SELECT UPPER(Iestade), LOWER(Atbilde) FROM uzskaite
+
+		   SELECT Iestade AS [Iestades oriģinālais nosaukums],
+		          UPPER(Iestade) AS [Iestādes nosaukums lieliem burtiem],
+				  Atbilde AS [Oiģinālie ieraksti ailē Atbilde],
+		          LOWER(Atbilde) AS [Iestādes atbilde maziem burtiem]
+		   FROM uzskaite
+
+           --REVERSE() function
+           SELECT REVERSE('MĀCĪBAS CSP 2025');
+		   SELECT REVERSE('MĀCĪBAS CSP 2025') AS [Ieraksts pretējā secībā]
+
+           --REPLACE() function
+           SELECT REPLACE('MĀCĪBAS CSP 2025', '2025', '2026');
+		   SELECT REPLACE('MĀCĪBAS CSP 2025', '2025', '2026') AS [Ieraksta gads nomainīts uz 2026]
+
+          --SUBSTRING() function
+		  --SUBSTRING(dati, sākot ar šo rakstu zīmi, atgriezt x zīmes);
+          SELECT SUBSTRING('MĀCĪBAS CSP 2025', 9, 8);
+		  SELECT SUBSTRING('MĀCĪBAS CSP 2025', 9, 8) AS [No 9-tās rakstu zīmes atlasītas 8 zīmes uz priekšu]
+
+		  SELECT Iestade AS [Iestades oriģinālais nosaukums],
+		         SUBSTRING(Iestade, 5, 8) AS [No iestādes nosaukuma izgriests teksts, kas zeko 5-tajai rakstu zīmei],
+				 LEN(SUBSTRING(Iestade, 5, 8)) AS [Mūs interesēja, cik garš šāds ieraksts ir],
+				 LEN(TRIM(SUBSTRING(Iestade, 5, 8))) AS [Mūs interesēja, vai šis garums tieši tāds arī ir, kad notīrīti tukšumi]
+   		  FROM uzskaite
+
+		 SELECT (LEN(SUBSTRING(Iestade, 5, 8)) - LEN(TRIM(SUBSTRING(Iestade, 5, 8)))) AS ATŠĶIRĪBAS
+   		 FROM uzskaite
+		 WHERE (LEN(SUBSTRING(Iestade, 5, 8)) - LEN(TRIM(SUBSTRING(Iestade, 5, 8)))) > 0
+
+		 --Izmantojam matemātisko funkciju COUNT(), lai dabūtu skaidru atbildi, cik rindās tad šīs atšķirības uzrādījās.
+		 SELECT COUNT(*)
+   		 FROM uzskaite
+		 WHERE (LEN(SUBSTRING(Iestade, 5, 8)) - LEN(TRIM(SUBSTRING(Iestade, 5, 8)))) > 0
+
+		 SELECT COUNT(*) AS [Protams, ka atšķirības neuzrādījās, jo Iestāde ir nvarchar]
+   		 FROM uzskaite
+		 WHERE (LEN(SUBSTRING(Iestade, 5, 8)) - LEN(TRIM(SUBSTRING(Iestade, 5, 8)))) > 0
+
+		 -- TĀ MĒS APSTRĀDĀJAM TEKSTU
+		 -- TAGAD ATPAKAĻ PIE SUMMAS TABULAS
+
+-- Atribūts 2: Summa
+--4 Apskata aili Summa
+SELECT Summa
+FROM RAW_summas
+
+--Vai visi te ir veselie skaitļi, vai aile nes decimālpunktus vai komatus.
+SELECT Summa
+FROM RAW_Summas
+WHERE Summa LIKE '%.%'; -- decimālpunktus neatrada
+
+SELECT Summa
+FROM RAW_Summas
+WHERE Summa LIKE '%,%';
+
+--SECINU ka aile nes veselus skaitļus
+
+--5 Definē atribūtu, lai tālāk šīs summas var tik lietotas aprēķiniem.
+ALTER TABLE RAW_summas 
+ALTER COLUMN Summa INT; 
+
+--6 Izveido tukšu tabulu
+CREATE TABLE summas (
+  ID_num varchar(7) NOT NULL,
+  summa int);
+
+--7 Pārņem noformētos datus uz jauno tabulu
+INSERT INTO summas
+SELECT *
+FROM RAW_summas
+--33 074 rindas
+
+SELECT * FROM summas
+SELECT 
+  (SELECT COUNT(*) FROM RAW_summas) - (SELECT COUNT(*) FROM summas) AS [Rindu atšķirība starp tabulām RAW_summas un summas];
+
+--Atšķirības nav ielādes tabulu var dzēst.
+DROP TABLE RAW_summas
+-----------------------------
+-----------------------------
+
+-- Savieno tabulas uzskaite un summas caur kreiso savienojumu: https://teams.microsoft.com/l/message/19:ab6276679e844190b1e95acd1a151fa9@thread.tacv2/1739280006084?tenantId=82d33df5-202a-4690-9901-daf87e089cb4&groupId=d238e5bf-4a21-4850-95e4-7cb1b47bec1e&parentMessageId=1739280006084&teamName=USDAD&channelName=SQL&createdTime=1739280006084&ngc=true
+
+-- Tas ir pirmā tabula (uzskaite) saglabā visas rindas, kamēr no summas pievelk klāt tikai tās, 
+-- kurām ID_num atribūts sakrīt.
+
+--1 Pirmā savienošanā savieno uz ID_num visus atribūtus no abām tabulām.
+--  Rezultātā ir divas ID_num ailes
+
+SELECT uzskaite.*, summas.*
+FROM uzskaite
+LEFT JOIN summas
+ON uzskaite.ID_num = summas.ID_num;
+
+--2 Tabulu nosaukumus var saīsināt: te uz burtu A un B.
+SELECT A.*, B.*
+FROM uzskaite AS A
+LEFT JOIN summas AS B
+ON A.ID_num = B.ID_num;
+
+--var noīsināt pavisam
+SELECT A.*, B.*
+FROM uzskaite A
+LEFT JOIN summas B
+ON A.ID_num = B.ID_num;   --VISUS AS VAR IZLAIST
+
+--3 To pašu savienojumu var veidot, izvēloties tikai dažas ailes no visām
+SELECT A.ID_num, 
+       A.Iestade, 
+       A.Pakalpojums, 
+       A.Atbilde, 
+       B.Summa
+FROM uzskaite AS A
+LEFT JOIN summas AS B
+ON A.ID_num = B.ID_num;
+
+-- 4 Kad izkārtojums apmierina, to noglabā jaunā tabulā ar nosaukumu aprekini.
+SELECT A.ID_num, 
+		A.Iestade, 
+		A.Pakalpojums, 
+		A.Atbilde, 
+		B.Summa
+INTO aprekini
+FROM uzskaite AS A
+LEFT JOIN summas AS B
+ON A.ID_num = B.ID_num;
+
+-- 5 Apskata jaunizveidoto tabulu aprekini
+SELECT *
+FROM aprekini;
+
+-----------------------šajā tabulā mēs veiksim aprēķinus lietojot matemātiskās SQL funkcijas
+--                     tad izveidosim kopsavilkumu, lai eksportētu un iesniegtu Latvijas Bankai
+
+
+
+
+					--Ja malkas pārkraušanai pumpis nederēja, bet tad kad mums jāpārsūknē šķidrumi, mēs lietojam pumpi.
+--matemātiskās funkcijas sagaida skaitļus, ko apstrādāt.
+
+				--MATH FUNCTIONS
+				--ABS() function
+				SELECT ABS(-202);
+				SELECT ABS(-202) AS [Absolūtā vērtība skaitlim -202.];
+				
+				--AVG() function: Par kādu vidējo summu te iet runa
+				SELECT Summa FROM RAW_Summas;
+				SELECT AVG(Summa) FROM RAW_Summas; --kļūda
+				SELECT AVG(CONVERT(numeric, Summa)) FROM RAW_Summas;  --returns 521703.238041
+				SELECT ROUND(AVG(CONVERT(numeric, Summa)), 2) FROM RAW_Summas;  --returns 521703.240000 jo SQL aizpilda vietas
+				SELECT CONVERT(numeric(10, 2), ROUND(AVG(CONVERT(numeric, Summa)), 2)) FROM RAW_Summas;  --returns 521703.24
+				SELECT CONVERT(numeric(10, 2), ROUND(AVG(CONVERT(numeric, Summa)), 2)) AS [Noapaļota vidējā summa] FROM RAW_Summas;
+				
+				--CEILING() function
+				SELECT CEILING(15.75) -- 16
+				SELECT CEILING(15.01)
+				
+				--COUNT() function
+				SELECT COUNT(*) FROM uzskaite;
+				SELECT COUNT(*) FROM RAW_summas; -- ierakstu skaits atšķiras
+				
+				--FLOOR() function
+				SELECT FLOOR(15.75) --15
+				SELECT FLOOR(15.99)
+				
+				--MAX() function: Max list price?
+				SELECT MAX(Summa) FROM RAW_Summas;
+				SELECT MAX(Summa) AS [Lielākā summa]
+				FROM RAW_Summas;
+				
+				--MIN() function: Min list price?
+				SELECT MIN(Summa) FROM RAW_Summas;
+				SELECT MIN(Summa) AS [Mazākā summa]
+				FROM RAW_Summas;
+				
+				--POWER() function
+				SELECT POWER(2,2) -- 2^2 = 4
+				SELECT POWER(2,2) AS [2 kvadrātā]
+				SELECT POWER(2,5) -- 2^5 = 32
+				SELECT POWER(2,2) AS [2 piektajā pakāpē]
+				
+				--RAND() function
+				SELECT RAND()  --Return a random number between 0 and 1
+				
+				SELECT RAND(5)  --Return the same random number - ne visai šo funkciju saprotu, kur tā var noderēt.
+				SELECT RAND(5)
+				SELECT RAND(5)
+				
+				SELECT RAND() * 10 --Returns a random number between 0 and 10.
+				
+				SELECT FLOOR(RAND()*10) --Returns a random integer 0-10.
+				
+				--ROUND() function
+				SELECT ROUND(123.321,3)
+				SELECT ROUND(123.321,2)
+				SELECT ROUND(123.321,0)
+				SELECT ROUND(123.321,-1)
+				
+				--SQRT() function
+				SELECT SQRT(9) --3
+				SELECT SQRT(36) --6
+				
+				--SQUARE() function
+				SELECT SQUARE(3)  --3*3 = 9
+				SELECT SQUARE(5)  --5*5 = 25
+				
+				--SUM() function: Total of the List Price?
+				SELECT SUM(Summa) FROM RAW_Summas; -- kļūda
+				SELECT SUM(CONVERT(bigint, Summa)) FROM RAW_Summas;
+				SELECT SUM(CONVERT(bigint, Summa)) AS Kopsumma 
+				FROM RAW_Summas;
+
+
+-- 6 Tai pievieno tukšu aili ar nosaukumu procenti, kas nesīs skaitļus ar decimālpunktu
+ALTER TABLE aprekini
+ADD procenti numeric;
+
+-- 7 Aili procenti aizpilda ar aprēķinu, kas ir 10% no summas vērtības ailē summa
+UPDATE aprekini
+SET procenti = summa / 10;
+
+-- 8 Tabulā aprekini izveido vēl vienu aili ar nosaukumu gala_summa.
+ALTER TABLE aprekini
+ADD gala_summa float;
+
+-- 9 Atribūts gala_summa nes aiļu summa un procenti kopsummu - bet tikai tiem, kas saņēma finansiālu atvieglojumu.
+UPDATE aprekini
+SET gala_summa = summa + procenti
+WHERE Atbilde = 'Pieteikums slēgts ar finansiālu atvieglojumu';
+
+-- 10 Atribūts nes aiļu summa - procenti visiem, kas nesaņēma finansiālu atvieglojumu.
+UPDATE aprekini
+SET gala_summa = summa - procenti
+WHERE Atbilde != 'Pieteikums slēgts ar finansiālu atvieglojumu';
+
+-- 11 Lai milzīgais cipars būtu izlasāms, to noapaļo līdz 2 zīmēm aiz decimālpunkta.
+UPDATE aprekini
+SET gala_summa = ROUND(gala_summa,2,0);
+
+
+-----------------
+SELECT A.[ID_num], A.[Iestade], A.[Pakalpojums], A.[Atbilde], A.[apstridets], B.Summa
+FROM [dbo].[uzskaite_LV] AS A
+LEFT JOIN [dbo].[summas_LV] AS B
+ON A.ID_num = B.ID_num;
+
+SELECT A.[ID_num], A.[Iestade], A.[Pakalpojums], A.[Atbilde], A.[apstridets], B.Summa
+INTO aprekini
+FROM [dbo].[uzskaite_LV] AS A
+LEFT JOIN [dbo].[summas_LV] AS B
+ON A.ID_num = B.ID_num;
+
+SELECT *
+FROM aprekini;
+
+ALTER TABLE aprekini
+ADD procenti float;
+
+UPDATE aprekini
+SET procenti = summa / 10;
+
+ALTER TABLE aprekini
+ADD gala_summa float;
+
+UPDATE aprekini
+SET gala_summa = summa + procenti
+WHERE Atbilde = 'Pieteikums slēgts ar finansiālu atvieglojumu';
+
+UPDATE aprekini
+SET gala_summa = summa - procenti
+WHERE Atbilde != 'Pieteikums slēgts ar finansiālu atvieglojumu';
+
+UPDATE aprekini
+SET gala_summa = ROUND(gala_summa,2,0);
+
+
+
+
