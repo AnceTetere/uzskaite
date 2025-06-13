@@ -1,0 +1,207 @@
+USE usd_at
+GO
+
+--Apskata tabulu
+SELECT *
+FROM RAW_summas
+
+-- Atribūts 2: Summa
+--1 Apskata aili Summa
+SELECT Summa
+FROM RAW_summas
+
+--Vai visi te ir veselie skaitļi, vai aile nes decimālpunktus vai komatus.
+SELECT Summa
+FROM RAW_Summas
+WHERE Summa LIKE '%.%'; -- decimālpunktus neatrada
+
+SELECT Summa
+FROM RAW_Summas
+WHERE Summa LIKE '%,%';
+
+--SECINU ka aile nes veselus skaitļus
+
+--2 Definē atribūtu, lai tālāk šīs summas var tik lietotas aprēķiniem.
+ALTER TABLE RAW_summas 
+ALTER COLUMN Summa INT; 
+
+--3 Izveido tukšu tabulu
+CREATE TABLE summas (
+  ID_num varchar(7) NOT NULL,
+  summa int);
+
+--7 Pārņem noformētos datus uz jauno tabulu
+INSERT INTO summas
+SELECT ID_num, Summa
+FROM RAW_summas
+--33 074 rindas
+
+SELECT * FROM summas;
+
+SELECT 
+  (SELECT COUNT(*) FROM RAW_summas) - (SELECT COUNT(*) FROM summas) 
+            AS [Rindu atšķirība starp tabulām RAW_summas un summas];
+
+--Atšķirības nav ielādes tabulu var dzēst.
+DROP TABLE RAW_summas
+-----------------------------
+-----------------------------
+
+-- Savieno tabulas uzskaite un summas caur kreiso savienojumu: https://teams.microsoft.com/l/message/19:ab6276679e844190b1e95acd1a151fa9@thread.tacv2/1739280006084?tenantId=82d33df5-202a-4690-9901-daf87e089cb4&groupId=d238e5bf-4a21-4850-95e4-7cb1b47bec1e&parentMessageId=1739280006084&teamName=USDAD&channelName=SQL&createdTime=1739280006084&ngc=true
+
+-- Tas ir pirmā tabula (uzskaite) saglabā visas rindas, kamēr no summas pievelk klāt tikai tās, 
+-- kurām ID_num atribūts sakrīt.
+
+--1 Pirmā savienošanā savieno uz ID_num visus atribūtus no abām tabulām.
+--  Rezultātā ir divas ID_num ailes
+
+SELECT uzskaite.*, summas.*
+FROM uzskaite
+LEFT JOIN summas
+ON uzskaite.ID_num = summas.ID_num;
+
+--2 Tabulu nosaukumus var saīsināt: te uz burtu A un B.
+SELECT A.*, B.*
+FROM uzskaite AS A
+LEFT JOIN summas AS B
+ON A.ID_num = B.ID_num;
+
+--var noīsināt pavisam
+SELECT A.*, B.*
+FROM uzskaite A
+LEFT JOIN summas B
+ON A.ID_num = B.ID_num;   --VISUS AS VAR IZLAIST
+
+--3 To pašu savienojumu var veidot, izvēloties tikai dažas ailes no visām
+SELECT A.ID_num, 
+       A.Iestade, 
+       A.Pakalpojums, 
+       A.Atbilde, 
+       B.Summa
+FROM uzskaite AS A
+LEFT JOIN summas AS B
+ON A.ID_num = B.ID_num;
+
+-- 4 Kad izkārtojums apmierina, to noglabā jaunā tabulā ar nosaukumu aprekini.
+SELECT A.ID_num, 
+		A.Iestade, 
+		A.Pakalpojums, 
+		A.Atbilde, 
+		B.Summa
+INTO aprekini
+FROM uzskaite AS A
+LEFT JOIN summas AS B
+ON A.ID_num = B.ID_num;
+
+-- 5 Apskata jaunizveidoto tabulu aprekini
+SELECT *
+FROM aprekini;
+
+-----------------------šajā tabulā mēs veiksim aprēķinus lietojot matemātiskās SQL funkcijas
+--                     tad izveidosim kopsavilkumu, lai eksportētu un iesniegtu Latvijas Bankai
+
+
+
+
+					--Ja malkas pārkraušanai pumpis nederēja, bet tad kad mums jāpārsūknē šķidrumi, mēs lietojam pumpi.
+--matemātiskās funkcijas sagaida skaitļus, ko apstrādāt.
+
+				--MATH FUNCTIONS
+				--ABS() function
+				SELECT ABS(-202);
+				SELECT ABS(-202) AS [Absolūtā vērtība skaitlim -202.];
+				
+				--AVG() function: Par kādu vidējo summu te iet runa
+				SELECT Summa FROM aprekini;
+				SELECT AVG(Summa) FROM aprekini; --kļūda
+				SELECT AVG(CONVERT(numeric, Summa)) FROM aprekini;  --returns 521703.238041
+				SELECT ROUND(AVG(CONVERT(numeric, Summa)), 2) FROM aprekini;  --returns 521703.240000 jo SQL aizpilda vietas
+
+				SELECT CONVERT(numeric(10, 2), ROUND(AVG(CONVERT(numeric, Summa)), 2)) FROM aprekini;  --returns 521703.24
+				SELECT CONVERT(numeric(10, 2), ROUND(AVG(CONVERT(numeric, Summa)), 2)) AS [Noapaļota vidējā summa] FROM aprekini;
+				
+				--CEILING() function
+				SELECT CEILING(15.75) -- 16
+				SELECT CEILING(15.01)
+				
+				--COUNT() function
+				SELECT COUNT(*) FROM uzskaite;
+				SELECT COUNT(*) FROM summas; -- ierakstu skaits atšķiras
+				
+				--FLOOR() function
+				SELECT FLOOR(15.75) --15
+				SELECT FLOOR(15.99)
+				
+				--MAX() function: Max list price?
+				SELECT MAX(Summa) FROM aprekini;
+				
+				SELECT MAX(Summa) AS [Lielākā summa]
+				FROM aprekini;
+				
+				--MIN() function: Min list price?
+				SELECT MIN(Summa) FROM aprekini;
+
+				SELECT MIN(Summa) AS [Mazākā summa]
+				FROM aprekini;
+				
+				--POWER() function
+				SELECT POWER(2,2) -- 2^2 = 4
+				SELECT POWER(2,2) AS [2 kvadrātā]
+				SELECT POWER(2,5) -- 2^5 = 32
+				SELECT POWER(2,5) AS [2 piektajā pakāpē]
+				
+				--RAND() function
+				SELECT RAND()  --Return a random number between 0 and 1
+				
+				SELECT RAND(5)  --Return the same random number - ne visai šo funkciju saprotu, kur tā var noderēt.
+				SELECT RAND(5)
+				SELECT RAND(5)
+				
+				SELECT RAND() * 10 --Returns a random number between 0 and 10.
+				
+				SELECT FLOOR(RAND()*10) --Returns a random integer 0-10.
+				
+				--ROUND() function
+				SELECT ROUND(123.321,3)
+				SELECT ROUND(123.321,2)
+				SELECT ROUND(123.321,0)
+				SELECT ROUND(123.321,-1)
+				
+				--SQRT() function
+				SELECT SQRT(9) --3
+				SELECT SQRT(36) --6
+				
+				--SQUARE() function
+				SELECT SQUARE(3)  --3*3 = 9
+				SELECT SQUARE(5)  --5*5 = 25
+				
+				--SUM() function: Total of the List Price?
+				SELECT SUM(Summa) FROM aprekini; -- kļūda
+				SELECT SUM(CONVERT(bigint, Summa)) FROM aprekini;
+				SELECT SUM(CONVERT(bigint, Summa)) AS Kopsumma 
+				FROM aprekini;
+
+--TURPINAM AR aprekini tabulu
+-- 6 Tai pievieno tukšu aili ar nosaukumu procenti, kas nesīs skaitļus ar decimālpunktu
+ALTER TABLE aprekini
+ADD procenti float;
+
+-- 7 Aili procenti aizpilda ar aprēķinu, kas ir 10% no summas vērtības ailē summa
+UPDATE aprekini
+SET procenti = summa / 10;
+
+-- 8 Tabulā aprekini izveido vēl vienu aili ar nosaukumu gala_summa.
+ALTER TABLE aprekini
+ADD gala_summa numeric;
+
+-- 9 Atribūts gala_summa nes -10% tiem, kas saņēma finansiālu atvieglojumu.
+UPDATE aprekini
+SET gala_summa = summa - procenti
+WHERE Atbilde = 'Pieteikums slēgts ar finansiālu atvieglojumu';
+
+-- 10 Atribūts nes aiļu summa +10% procenti visiem, kas nesaņēma finansiālu atvieglojumu.
+UPDATE aprekini
+SET gala_summa = summa + procenti
+WHERE Atbilde != 'Pieteikums slēgts ar finansiālu atvieglojumu';
+SELECT * FROM aprekini
+
